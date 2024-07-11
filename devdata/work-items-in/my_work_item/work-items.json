@@ -1,0 +1,10 @@
+[
+  {
+      "payload": 
+        {
+         "search_phrase": "earthquake",
+         "news_category": "stories", 
+         "months": 1
+      }
+  }
+]
