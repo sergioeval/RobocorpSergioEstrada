@@ -7,6 +7,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 import os
+from RPA.Archive import Archive
 
 
 # creating the necesary output paths if they don't exists
@@ -47,3 +48,9 @@ class Browser_Get_News:
         """
         To search data for one of the work items 
         """
+
+    @staticmethod
+    def archive_all():
+        arc = Archive()
+        arc.archive_folder_with_zip(
+            folder=LOGGING_PATH, archive_name=OUTPUT_BASE_PATH+"logs.zip")
