@@ -1,3 +1,15 @@
+
+# SAMPLE DATA FOR WORK ITEM
+
+{
+  "search_phrase": "earthquake",
+  "news_category": "stories", 
+  "months": 1
+}
+
+
+
+
 # Template: Python - Minimal
 
 This template leverages the new [Python framework](https://github.com/robocorp/robocorp), the [libraries](https://github.com/robocorp/robocorp/blob/master/docs/README.md#python-libraries) from to same project as well.
