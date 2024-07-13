@@ -8,15 +8,16 @@ import time
 from datetime import datetime
 from constants import (
     OUTPUT_BASE_PATH,
-    NEWS_URL
+    NEWS_URL,
+    LOGGING_PATH
 )
-from utilities import FailedCustomException
+from Utilities import FailedCustomException
 
 
 # Logging file configuration
 now = datetime.now()
 timestamp = now.strftime("%Y%m%d_%H%M%S")
-log_file_name = f"{OUTPUT_BASE_PATH}{timestamp}.log"
+log_file_name = f"{LOGGING_PATH}{timestamp}.log"
 logging.basicConfig(filename=log_file_name, filemode='w',
                     level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')

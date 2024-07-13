@@ -2,8 +2,8 @@ from RPA.FileSystem import FileSystem
 from constants import (
     LOGGING_PATH,
     PICTURES_PATH,
-    OUTPUT_BASE_PATH,
-    FailedCustomException)
+    OUTPUT_BASE_PATH)
+from Utilities import FailedCustomException
 import logging
 from datetime import datetime
 import inspect
@@ -13,7 +13,7 @@ logger = logging.getLogger()
 
 class Initiate_Structure:
     """
-    To initiate the necesary folder structure if needed
+    To initiate the necesary folder structure for the robot
     """
 
     def __init__(self):

@@ -1,21 +1,18 @@
-import inspect
+
 # NEWS_URL = "https://apnews.com/"
 NEWS_URL = "https://www.nbcnews.com/"
 PICTURES_PATH = "output/pictures/"
 OUTPUT_BASE_PATH = "output/"
 LOGGING_PATH = "output/logs/"
-LOG_MESSAGES = {
-    "info": "*** INFO ***"
-}
 
+# My Selectors
+SELECTOR_HAMBURGER_MENU = "//button[@aria-label='news navigation and search']"
+SELECTOR_SEARCH_FIELD = "//input[@placeholder='Search NBC News']"
+SELECTOR_SORT_BY_TEXT = "//div[contains(text(), 'Sort by:')]"
+SELECTOR_OPTIONS_SORT_BY = "//div[contains(@class, 'gsc-orderby')]/div[contains(@class, 'gsc-option-menu-container') and preceding-sibling::div[contains(text(), 'Sort by:')]]"
+SELECTOR_OPTION_BY_DATE = "//div[@class='gsc-option' and text()='Date']"
+SELECTOR_PAGINATION_SECTION = "//div[@tabindex='0' and contains(text(), '1')]"
+SELECTOR_PAGINATION_TEMPLATE = "//div[@aria-label='Page {count}']"
 
-class FailedCustomException(Exception):
-    def __init__(self, message, source, file_name):
-        self.message = str(message)  # .replace(":", "").replace(",", "")
-        self.source = source
-        self.file_name = file_name
-        super().__init__(self.message)
-
-    def __str__(self):
-        return f'{{"message": *** {self.message} ***, "source_file_name": {self.file_name}, "sorce_function_name": {self.source}}}'
-    pass
+SELECTOR_ROOT_RESULTS_SECTION = "//div[@id='___gcse_0']/div/div/div/div[5]/div[2]/div"
+SELECTOR_SEARCH_RESULTS = "//div[@class='gsc-webResult gsc-result']"
