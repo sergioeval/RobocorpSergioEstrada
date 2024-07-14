@@ -6,7 +6,10 @@ NEWS_URL = "https://www.nbcnews.com/"
 PICTURES_PATH = "output/pictures/"
 OUTPUT_BASE_PATH = "output/"
 LOGGING_PATH = "output/logs/"
-FINAL_REPORT_FILE_PATH_TEMPLATE = OUTPUT_BASE_PATH+"FINAL_REPORT_{date}.xlsx"
+FINAL_REPORT_PATH = "output/final_report/"
+FINAL_REPORT_FILE_PATH_TEMPLATE = FINAL_REPORT_PATH+"FINAL_REPORT_{date}.xlsx"
+FINAL_ZIP_FILE_TEMPLATE = OUTPUT_BASE_PATH+"Final_results_{time_stamp}.zip"
+
 
 # Selector initial page
 SELECTOR_HAMBURGER_MENU = "//button[@aria-label='news navigation and search']"
