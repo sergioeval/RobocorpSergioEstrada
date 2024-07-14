@@ -11,13 +11,15 @@ from constants import (
     NEWS_URL,
     LOGGING_PATH
 )
-from Utilities import FailedCustomException
+from Utilities import FailedCustomException, save_work_items
 
+# Setup folders
+Initiate_Structure().setup_folders()
 
 # Logging file configuration
 now = datetime.now()
 timestamp = now.strftime("%Y%m%d_%H%M%S")
-log_file_name = f"{LOGGING_PATH}{timestamp}.log"
+log_file_name = f"{LOGGING_PATH}task_1_{timestamp}.log"
 logging.basicConfig(filename=log_file_name, filemode='w',
                     level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -33,19 +35,11 @@ def get_the_news():
     work_item_current = workitems.inputs.current
 
     try:
-        # Setup folders
-        Initiate_Structure().setup_folders()
-
-        # Get News Data
+        # Get News Data and create work items
         get_news = Get_News_Data(wi=work_item_current)
-        get_news.run_all()
+        work_items_search_results = get_news.run_all()
+        save_work_items(payloads=work_items_search_results)
+        work_item_current.done()
 
     except FailedCustomException as e:
         logger.error(e)
-
-    #
-    #
-
-    # Create Excel file with data
-
-    # Clean and finish

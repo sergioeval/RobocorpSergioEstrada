@@ -9,9 +9,11 @@ from constants import (
     SELECTOR_OPTION_BY_DATE,
     SELECTOR_PAGINATION_SECTION,
     SELECTOR_PAGINATION_TEMPLATE,
-    SELECTOR_SEARCH_RESULTS
+    SELECTOR_SEARCH_RESULTS,
+    SELECTOR_ROOT_RESULTS_SECTION,
+    PICTURES_PATH
 )
-from Utilities import FailedCustomException
+from Utilities import FailedCustomException, check_contains_money_amount
 import time
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
@@ -21,8 +23,13 @@ from RPA.Archive import Archive
 import logging
 import inspect
 from bs4 import BeautifulSoup
+from RPA.HTTP import HTTP
+import re
+
 
 logger = logging.getLogger()
+browser.configure(slowmo=100)
+http = HTTP()
 
 
 class Get_News_Data:
@@ -45,6 +52,8 @@ class Get_News_Data:
         self.step_1_open_url()
         self.step_2_look_for_phrase_and_sort_by_date()
         self.step_3_get_news_data()
+
+        return self.final_search_results
 
     def step_1_open_url(self):
         """
@@ -75,6 +84,7 @@ class Get_News_Data:
 
         try:
             page = browser.page()
+
             # search for the phrase
 
             search_phrase = self.wi.payload["search_phrase"]
@@ -93,16 +103,14 @@ class Get_News_Data:
 
             page.keyboard.press('Enter')
 
-            # need to sort by  date
+            # need to sort by  date Selector fixed OK
             page.wait_for_selector(
                 selector=SELECTOR_OPTIONS_SORT_BY,
                 timeout=40000
             ).click()
 
-            page.wait_for_selector(
-                selector=SELECTOR_OPTION_BY_DATE,
-                timeout=40000
-            ).click()
+            page.locator(selector=SELECTOR_OPTIONS_SORT_BY).locator(
+                selector_or_locator=SELECTOR_OPTION_BY_DATE).click()
 
         except Exception as e:
             source = inspect.currentframe().f_code.co_name
@@ -120,42 +128,95 @@ class Get_News_Data:
         # etc
         """
         logger.info("Getting the news data already sorted")
+        page = browser.page()
 
         try:
             months = self.wi.payload['months']
 
             # Get the accepted params to validate dates in news
             accepted_parameters_for_dates = self._utility_get_months_parameters()
-            print(accepted_parameters_for_dates)
+            # print(accepted_parameters_for_dates)
 
             # Check if page has pagination or not and return reult
             paginations = self._utility_get_maximun_paginations_in_page()
 
-            # Get results to create work items
-            results = self._utility_get_requested_search_results_data()
+            # Get results from page
+            self.final_search_results = []
+            for p in paginations:
+                results = self._utility_get_requested_search_results_data()
+                results, need_cleanup = self._utility_eval_search_results(
+                    results=results,
+                    accepted_params=accepted_parameters_for_dates)
+                # if need cleanup
+                if need_cleanup == True:
+                    results = [x for x in results if x['accepted'] == True]
+                    self.final_search_results = self.final_search_results+results
+                    break
+
+                # no cleanup needed continue pagination
+                self.final_search_results = self.final_search_results+results
+                # go to next page
+                page.locator(
+                    selector=SELECTOR_PAGINATION_TEMPLATE.format(count=p)).click()
 
         except Exception as e:
             source = inspect.currentframe().f_code.co_name
             raise FailedCustomException(
                 message=e, source=source, file_name=self.file_name)
 
+    def _utility_eval_search_results(self, results, accepted_params):
+        """
+        To evaluate the search results from each page
+        """
+        need_cleanup = False
+
+        for res in results:
+            date = res["date"]
+            for el in accepted_params:
+                if el in date:
+                    res["accepted"] = True
+                    break
+            if "accepted" not in res.keys():
+                res["accepted"] = False
+                need_cleanup = True
+        return results, need_cleanup
+
     def _utility_get_requested_search_results_data(self):
         """To get the requested search results data from page/s"""
         page = browser.page()
-        search_results = page.query_selector_all(
-            selector=SELECTOR_SEARCH_RESULTS)
-        print(search_results)
-        for sr in search_results:
-            # print(sr.text_content())
-            soup = BeautifulSoup(sr.inner_html(), "html.parser")
-            title = soup.find('a', attrs={'class': 'gs-title'}).text
-            description = soup.find(
-                'div', attrs={"class": "gs-bidi-start-align gs-snippet"}).text
 
-            print(description)
-            print('')
+        # get main element containing all results
+        page.wait_for_selector(
+            selector=SELECTOR_ROOT_RESULTS_SECTION, timeout=30000)
+        search_results = page.locator(
+            selector=SELECTOR_ROOT_RESULTS_SECTION).inner_html()
 
-            break
+        soup = BeautifulSoup(search_results, "html.parser")
+        only_news = soup.find_all(
+            "div", attrs={"class": "gsc-webResult gsc-result"})
+        news_data = []
+
+        for result in only_news:
+            title = result.find('a', attrs={'class': 'gs-title'}).text
+            description = result.find(
+                'div', attrs={"dir": "ltr", "class": "gs-bidi-start-align gs-snippet"}).text
+            date = description.split("...")[0].strip()
+            image_data = result.find("img")
+            image_source = image_data.get("src")
+            image_name = image_source.split('/')[-1].split(":")[-1]+".png"
+            http.download(image_source, PICTURES_PATH +
+                          image_name, overwrite=True)
+            search_word_counts = len([x for x in description.split() if str(
+                x.lower()) == self.wi.payload["search_phrase"].lower()])
+            news_data.append({
+                "title": title,
+                "description": description,
+                "date": date,
+                "image_name": image_name,
+                "search_word_counts": search_word_counts,
+                "contains_money_amount": check_contains_money_amount(text=description)
+            })
+        return news_data
 
     def _utility_get_maximun_paginations_in_page(self):
         """
@@ -195,12 +256,8 @@ class Get_News_Data:
 
         final_date = current_date_to_use + relativedelta(months=months_to_add)
 
-        default_accepted = set(
-            ['days ago', 'hours ago', 'minutes ago', 'seconds ago'])
+        default_accepted = ['ago']
 
         for d in accepted_new_dates:
-            default_accepted.add((
-                d.strftime("%b"),
-                d.strftime("%Y")
-            ))
+            default_accepted.append(d.strftime("%b"))
         return default_accepted
