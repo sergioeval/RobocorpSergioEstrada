@@ -1,6 +1,8 @@
 from robot_code.utilities.base import Base
 from robot_code.utilities.custom_exception import FailedCustomException
 import inspect
+import logging
+logger = logging.getLogger()
 
 
 class Go_Search_Phrase(Base):
@@ -25,6 +27,8 @@ class Go_Search_Phrase(Base):
             self.page.wait_for_selector(
                 selector=self.my_constanst.SELECTOR_HAMBURGER_MENU,
                 timeout=40000)
+
+            logger.info(f"Web page loaded ok: {self.my_constanst.NEWS_URL}")
 
         except Exception as e:
             source = inspect.currentframe().f_code.co_name
@@ -53,6 +57,8 @@ class Go_Search_Phrase(Base):
             self.page.keyboard.press('Enter')
 
             self.wait_this(time_seconds=2)
+
+            logger.info("Search phrase process executed correctly.")
         except Exception as e:
             source = inspect.currentframe().f_code.co_name
             self.work_items.fail(exception_type="APPLICATION",

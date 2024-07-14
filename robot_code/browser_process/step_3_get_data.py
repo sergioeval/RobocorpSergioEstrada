@@ -19,12 +19,6 @@ class Get_News_Data(Base):
         self.accepted_time_params = accepted_time_params
         self.pagination = pagination
 
-    def run(self):
-        """
-        To collect the news data 
-        """
-        return self.get_all_data()
-
     def get_all_data(self):
         """
         For each pagination , get data from page
@@ -47,6 +41,8 @@ class Get_News_Data(Base):
                 # go to next page
                 self.page.locator(
                     selector=self.my_constanst.SELECTOR_PAGINATION_TEMPLATE.format(count=p)).click()
+
+            logger.info("Search results validated")
 
             return final_search_results
         except Exception as e:
@@ -113,6 +109,8 @@ class Get_News_Data(Base):
                     "search_word_counts": search_word_counts,
                     "contains_money_amount": self.check_contains_money_amount(text=description)
                 })
+            logger.info("Data from page extracted correctly.")
+
             return news_data
         except Exception as e:
             source = inspect.currentframe().f_code.co_name

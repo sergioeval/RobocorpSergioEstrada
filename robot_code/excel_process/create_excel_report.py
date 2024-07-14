@@ -32,6 +32,8 @@ class Create_Excel_Report(Base):
                 self.excel_actions.append_rows_to_worksheet(
                     content=item, header=True)
             workbook.save()
+
+            logger.info(f"File report saved correctly: {self.excel_file_path}")
         except Exception as e:
             source = inspect.currentframe().f_code.co_name
             self.work_items.fail(exception_type="APPLICATION",

@@ -39,7 +39,7 @@ def get_the_news():
         # Get the news data
         news_data = Get_News_Data(
             pagination=pagination,
-            accepted_time_params=valid_time_params).run()
+            accepted_time_params=valid_time_params).get_all_data()
 
         # creating excel report
         Create_Excel_Report().create_file_add_data(news_data=news_data)

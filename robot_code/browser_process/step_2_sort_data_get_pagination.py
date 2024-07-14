@@ -31,9 +31,10 @@ class Sort_Get_Pagination(Base):
             self.page.locator(selector=self.my_constanst.SELECTOR_OPTIONS_SORT_BY).locator(
                 selector_or_locator=self.my_constanst.SELECTOR_OPTION_BY_DATE).click()
 
-            logger.info(f"Search result is sorted by date now")
-
             self.wait_this(time_seconds=2)
+
+            logger.info("Search result is sorted by date now.")
+
         except Exception as e:
             source = inspect.currentframe().f_code.co_name
             self.work_items.fail(exception_type="APPLICATION",
@@ -61,9 +62,9 @@ class Sort_Get_Pagination(Base):
                     selector=self.my_constanst.SELECTOR_PAGINATION_TEMPLATE.format(count=count)):
                 pages.append(count)
                 count += 1
-            return pages
 
-            self.wait_this(time_seconds=2)
+            logger.info(f"Pagination Limits created correctly: {pages}")
+            return pages
         except Exception as e:
             source = inspect.currentframe().f_code.co_name
             self.work_items.fail(exception_type="APPLICATION",
