@@ -4,6 +4,8 @@ from constants import (
     LOGGING_PATH,
     OUTPUT_BASE_PATH
 )
+import re
+from robocorp import workitems
 
 
 class FailedCustomException(Exception):
@@ -14,7 +16,7 @@ class FailedCustomException(Exception):
         super().__init__(self.message)
 
     def __str__(self):
-        return f'{{"message": *** {self.message} ***, "source_file_name": {self.file_name}, "sorce_function_name": {self.source}}}'
+        return f'\nmessage: *** {self.message} ***\nsource_file_name: *** {self.file_name} ***\nsorce_function_name: *** {self.source} ***'
     pass
 
 
@@ -22,3 +24,13 @@ def archive_all():
     arc = Archive()
     arc.archive_folder_with_zip(
         folder=LOGGING_PATH, archive_name=OUTPUT_BASE_PATH+"logs.zip")
+
+
+def check_contains_money_amount(text):
+    pattern = r'\$\d{1,3}(,\d{3})*(\.\d{1,2})?|(\d+ (dollars|USD))'
+    return bool(re.search(pattern, text))
+
+
+def save_work_items(payloads):
+    for payload in payloads:
+        workitems.outputs.create(payload)
