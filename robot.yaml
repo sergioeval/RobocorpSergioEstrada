@@ -2,10 +2,8 @@
 # https://github.com/robocorp/rcc/blob/master/docs/recipes.md#what-is-in-robotyaml
 
 tasks:
-  Produce data:
-    shell: python -m robocorp.tasks run task_1_get_news.py
-  Consume data:
-    shell: python -m robocorp.tasks run task_2_create_report.py
+  Run Task:
+    shell: python -m robocorp.tasks run tasks.py
 
 environmentConfigs:
   - environment_windows_amd64_freeze.yaml

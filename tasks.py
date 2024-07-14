@@ -1,27 +1,26 @@
 from robocorp.tasks import task
-from Get_News_Data import Get_News_Data
-from Initiate_Structure import Initiate_Structure
-from robocorp import workitems
-from RPA.Archive import Archive
+# from Get_News_Data import Get_News_Data
+# from Initiate_Structure import Initiate_Structure
 import logging
-import time
-from datetime import datetime
-from constants import (
-    OUTPUT_BASE_PATH,
-    NEWS_URL
-)
-from utilities import FailedCustomException
+# from Utilities import FailedCustomException, save_work_items
+from robot_code.utilities.initiate_structure import Initiate_Structure
+from robot_code.utilities.base import Base
+from robot_code.browser_process.step_1_go_search import Go_Search_Phrase
+from robot_code.browser_process.step_2_sort_data_get_pagination import Sort_Get_Pagination
+from robot_code.browser_process.step_3_get_data import Get_News_Data
+from robot_code.excel_process.create_excel_report import Create_Excel_Report
 
+from robot_code.utilities.custom_exception import FailedCustomException
+
+# Setup folders
+Initiate_Structure().setup_folders()
 
 # Logging file configuration
-now = datetime.now()
-timestamp = now.strftime("%Y%m%d_%H%M%S")
-log_file_name = f"{OUTPUT_BASE_PATH}{timestamp}.log"
+log_file_name = f"{Base.my_constanst.LOGGING_PATH}task_1_{Base.string_timestamp}.log"
 logging.basicConfig(filename=log_file_name, filemode='w',
                     level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
-logger.info(f"URL: {NEWS_URL}")
 
 
 @task
@@ -29,22 +28,25 @@ def get_the_news():
     """
     Task to get all news according to the work items parameters
     """
-    work_item_current = workitems.inputs.current
+    # work_item_current = workitems.inputs.current
 
     try:
-        # Setup folders
-        Initiate_Structure().setup_folders()
+        # Search news data
+        Go_Search_Phrase().run()
+        pagination = Sort_Get_Pagination().run()
+        valid_time_params = Base().get_valid_time_parameters()
 
-        # Get News Data
-        get_news = Get_News_Data(wi=work_item_current)
-        get_news.run_all()
+        # Get the news data
+        news_data = Get_News_Data(
+            pagination=pagination,
+            accepted_time_params=valid_time_params).run()
+
+        # creating excel report
+        Create_Excel_Report().create_file_add_data(news_data=news_data)
+
+        # archive and clean
+        Base.archive_to_zip()
+        Base.clean_output_folder()
 
     except FailedCustomException as e:
         logger.error(e)
-
-    #
-    #
-
-    # Create Excel file with data
-
-    # Clean and finish
