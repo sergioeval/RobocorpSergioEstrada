@@ -19,6 +19,7 @@ class Create_Excel_Report(Base):
         """
         create the excel file and add the data 
         """
+        source = inspect.currentframe().f_code.co_name
         try:
             # CREATE THE TABLE
             table = self.tables_actions.create_table()
@@ -33,10 +34,20 @@ class Create_Excel_Report(Base):
                     content=item, header=True)
             workbook.save()
 
-            logger.info(f"File report saved correctly: {self.excel_file_path}")
+            logger.info(
+                self.my_constanst.LOG_INFO_TEMPLATE.format(
+                    message=f"File report saved correctly: {self.excel_file_path}",
+                    function_name=source,
+                    file_name=self.get_file_name(self.file_name)
+                )
+            )
+
         except Exception as e:
-            source = inspect.currentframe().f_code.co_name
             self.work_items.fail(exception_type="APPLICATION",
                                  code="CREATE_EXCEL_REPORT_FAILED", message=e)
-            raise FailedCustomException(
-                message=e, source=source, file_name=self.file_name)
+            fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
+                message=e,
+                function_name=source,
+                file_name=self.get_file_name(self.file_name)
+            )
+            raise FailedCustomException(message=fail_message)

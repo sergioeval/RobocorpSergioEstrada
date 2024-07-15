@@ -10,6 +10,9 @@ FINAL_REPORT_PATH = "output/final_report/"
 FINAL_REPORT_FILE_PATH_TEMPLATE = FINAL_REPORT_PATH+"FINAL_REPORT_{date}.xlsx"
 FINAL_ZIP_FILE_TEMPLATE = OUTPUT_BASE_PATH+"Final_results_{time_stamp}.zip"
 
+# MESSAGES
+LOG_INFO_TEMPLATE = "\nProcess Executed Correctly:\n**********\n{message}\n**********\n\nFunction Executed:\n**********\n{function_name}\n**********\n\nFrom File:\n**********\n{file_name}\n**********"
+LOG_FAILED_TEMPLATE = "\nProcess Failed Error:\n**********\n{message}\n**********\n\nFunction Executed:\n**********\n{function_name}\n**********\n\nFrom File:\n**********\n{file_name}\n**********"
 
 # Selector initial page
 SELECTOR_HAMBURGER_MENU = "//button[@aria-label='news navigation and search']"

@@ -37,6 +37,7 @@ class Base:
         """
         To archive all data and clean output folder
         """
+        source = inspect.currentframe().f_code.co_name
         try:
             archive_name = cls.my_constanst.FINAL_ZIP_FILE_TEMPLATE.format(
                 time_stamp=cls.string_timestamp)
@@ -60,20 +61,31 @@ class Base:
                 archive_name=archive_name,
                 folder="logs"
             )
-            logger.info(f"Final ZIP file created correctly: {archive_name}")
+
+            logger.info(
+                cls.my_constanst.LOG_INFO_TEMPLATE.format(
+                    message=f"Final ZIP file created correctly: {archive_name}",
+                    function_name=source,
+                    file_name=cls.get_file_name(cls.file_name_base_class)
+                )
+            )
 
         except Exception as e:
-            source = inspect.currentframe().f_code.co_name
             cls.work_items.fail(exception_type="APPLICATION",
                                 code="ERROR_IN_ARCHIVE_TO_ZIP_PROCESS", message=e)
-            raise FailedCustomException(
-                message=e, source=source, file_name=cls.file_name_base_class)
+            fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
+                message=e,
+                function_name=source,
+                file_name=cls.get_file_name(cls.file_name_base_class)
+            )
+            raise FailedCustomException(message=fail_message)
 
     @classmethod
     def clean_output_folder(cls):
         """
         To clean the output folder
         """
+        source = inspect.currentframe().f_code.co_name
         try:
             for folder in [
                     cls.my_constanst.PICTURES_PATH,
@@ -84,22 +96,39 @@ class Base:
                     path=folder,
                     recursive=True
                 )
+
+            logger.info(
+                cls.my_constanst.LOG_INFO_TEMPLATE.format(
+                    message="Cleanup process executed correctly",
+                    function_name=source,
+                    file_name=cls.get_file_name(cls.file_name_base_class)
+                )
+            )
+
         except Exception as e:
-            source = inspect.currentframe().f_code.co_name
             cls.work_items.fail(exception_type="APPLICATION",
                                 code="ERROR_IN_CLEANING_OUTPUT_FOLDER_PROCESS", message=e)
-            raise FailedCustomException(
-                message=e, source=source, file_name=cls.file_name_base_class)
+            fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
+                message=e,
+                function_name=source,
+                file_name=cls.get_file_name(cls.file_name_base_class)
+            )
+            raise FailedCustomException(message=fail_message)
 
     @staticmethod
     def wait_this(time_seconds):
         time.sleep(time_seconds)
+
+    @staticmethod
+    def get_file_name(text):
+        return text.split("robot_code")[-1]
 
     @classmethod
     def get_valid_time_parameters(cls):
         """
         get the months or valid date parameters accordng to the request
         """
+        source = inspect.currentframe().f_code.co_name
         try:
             months_wi = cls.work_items.payload['months']
             now = cls.run_time_stamp
@@ -120,12 +149,22 @@ class Base:
             for d in accepted_new_dates:
                 default_accepted.append(d.strftime("%b"))
 
-            logger.info(f"Valid time parameters to use: {default_accepted}")
+            logger.info(
+                cls.my_constanst.LOG_INFO_TEMPLATE.format(
+                    message=f"Valid time parameters to use: {default_accepted}",
+                    function_name=source,
+                    file_name=cls.get_file_name(
+                        cls.file_name_base_class)
+                )
+            )
             return default_accepted
 
         except Exception as e:
-            source = inspect.currentframe().f_code.co_name
             cls.work_items.fail(exception_type="APPLICATION",
                                 code="ERROR_GETTING_VALID_TIME_PARAMETERS", message=e)
-            raise FailedCustomException(
-                message=e, source=source, file_name=cls.file_name_base_class)
+            fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
+                message=e,
+                function_name=source,
+                file_name=cls.get_file_name(cls.file_name_base_class)
+            )
+            raise FailedCustomException(message=fail_message)

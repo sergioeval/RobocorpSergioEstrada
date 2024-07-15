@@ -20,6 +20,7 @@ class Sort_Get_Pagination(Base):
         """
         Sort the search results
         """
+        source = inspect.currentframe().f_code.co_name
         try:
             # need to sort by  date Selector fixed OK
             self.page.wait_for_selector(
@@ -33,19 +34,29 @@ class Sort_Get_Pagination(Base):
 
             self.wait_this(time_seconds=2)
 
-            logger.info("Search result is sorted by date now.")
+            logger.info(
+                self.my_constanst.LOG_INFO_TEMPLATE.format(
+                    message="Search result is sorted by date now.",
+                    function_name=source,
+                    file_name=self.get_file_name(self.file_name)
+                )
+            )
 
         except Exception as e:
-            source = inspect.currentframe().f_code.co_name
             self.work_items.fail(exception_type="APPLICATION",
                                  code="SORT_DATA_FAILED", message=e)
-            raise FailedCustomException(
-                message=e, source=source, file_name=self.file_name)
+            fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
+                message=e,
+                function_name=source,
+                file_name=self.get_file_name(self.file_name)
+            )
+            raise FailedCustomException(message=fail_message)
 
     def get_pagination(self):
         """
         Get the available pagination in current search
         """
+        source = inspect.currentframe().f_code.co_name
         try:
             # need to sort by  date Selector fixed OK
             # But we have to make sure we get only the pagination pages
@@ -63,11 +74,20 @@ class Sort_Get_Pagination(Base):
                 pages.append(count)
                 count += 1
 
-            logger.info(f"Pagination Limits created correctly: {pages}")
+            logger.info(
+                self.my_constanst.LOG_INFO_TEMPLATE.format(
+                    message=f"Pagination Limits created correctly: {pages}",
+                    function_name=source,
+                    file_name=self.get_file_name(self.file_name)
+                )
+            )
             return pages
         except Exception as e:
-            source = inspect.currentframe().f_code.co_name
             self.work_items.fail(exception_type="APPLICATION",
                                  code="GET_PAGINATION_FAILED", message=e)
-            raise FailedCustomException(
-                message=e, source=source, file_name=self.file_name)
+            fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
+                message=e,
+                function_name=source,
+                file_name=self.get_file_name(self.file_name)
+            )
+            raise FailedCustomException(message=fail_message)

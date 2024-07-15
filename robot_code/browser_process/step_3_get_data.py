@@ -23,6 +23,7 @@ class Get_News_Data(Base):
         """
         For each pagination , get data from page
         """
+        source = inspect.currentframe().f_code.co_name
         try:
             final_search_results = []
             for p in self.pagination:
@@ -42,36 +43,66 @@ class Get_News_Data(Base):
                 self.page.locator(
                     selector=self.my_constanst.SELECTOR_PAGINATION_TEMPLATE.format(count=p)).click()
 
-            logger.info("Search results validated")
+            logger.info(
+                self.my_constanst.LOG_INFO_TEMPLATE.format(
+                    message="Search results validated",
+                    function_name=source,
+                    file_name=self.get_file_name(self.file_name)
+                )
+            )
 
             return final_search_results
+
         except Exception as e:
-            source = inspect.currentframe().f_code.co_name
             self.work_items.fail(exception_type="APPLICATION",
                                  code="STEP_3_GET_ALL_DATA_FAILED", message=e)
-            raise FailedCustomException(
-                message=e, source=source, file_name=self.file_name)
+            fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
+                message=e,
+                function_name=source,
+                file_name=self.get_file_name(self.file_name)
+            )
+            raise FailedCustomException(message=fail_message)
 
-    @staticmethod
-    def eval_search_results(results, accepted_params):
+    def eval_search_results(self, results, accepted_params):
         """
         To evaluate the search results from each page
         """
-        need_cleanup = False
+        source = inspect.currentframe().f_code.co_name
+        try:
+            need_cleanup = False
 
-        for res in results:
-            date = res["date"]
-            for el in accepted_params:
-                if el in date:
-                    res["accepted"] = True
-                    break
-            if "accepted" not in res.keys():
-                res["accepted"] = False
-                need_cleanup = True
-        return results, need_cleanup
+            for res in results:
+                date = res["date"]
+                for el in accepted_params:
+                    if el in date:
+                        res["accepted"] = True
+                        break
+                if "accepted" not in res.keys():
+                    res["accepted"] = False
+                    need_cleanup = True
+
+            logger.info(
+                self.my_constanst.LOG_INFO_TEMPLATE.format(
+                    message="Search Results evaluation executed Correctly",
+                    function_name=source,
+                    file_name=self.get_file_name(self.file_name)
+                )
+            )
+            return results, need_cleanup
+
+        except Exception as e:
+            self.work_items.fail(exception_type="APPLICATION",
+                                 code="RESULTS_EVALUATION_PROCESS_FAILED", message=e)
+            fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
+                message=e,
+                function_name=source,
+                file_name=self.get_file_name(self.file_name)
+            )
+            raise FailedCustomException(message=fail_message)
 
     def get_data_from_page(self):
         """To get the requested search results data from page/s"""
+        source = inspect.currentframe().f_code.co_name
         try:
             # page = browser.page()
 
@@ -109,15 +140,26 @@ class Get_News_Data(Base):
                     "search_word_counts": search_word_counts,
                     "contains_money_amount": self.check_contains_money_amount(text=description)
                 })
-            logger.info("Data from page extracted correctly.")
+
+            logger.info(
+                self.my_constanst.LOG_INFO_TEMPLATE.format(
+                    message="Data from page extracted correctly.",
+                    function_name=source,
+                    file_name=self.get_file_name(self.file_name)
+                )
+            )
 
             return news_data
+
         except Exception as e:
-            source = inspect.currentframe().f_code.co_name
             self.work_items.fail(exception_type="APPLICATION",
                                  code="STEP_3_GET_DATA_FROM_PAGE_FAILED", message=e)
-            raise FailedCustomException(
-                message=e, source=source, file_name=self.file_name)
+            fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
+                message=e,
+                function_name=source,
+                file_name=self.get_file_name(self.file_name)
+            )
+            raise FailedCustomException(message=fail_message)
 
     @staticmethod
     def check_contains_money_amount(text):

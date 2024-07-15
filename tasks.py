@@ -50,3 +50,8 @@ def get_the_news():
 
     except FailedCustomException as e:
         logger.error(e)
+        Base.file_system_actions.copy_file(
+            source=log_file_name,
+            destination=Base.my_constanst.OUTPUT_BASE_PATH +
+            log_file_name.split("/")[-1]
+        )
