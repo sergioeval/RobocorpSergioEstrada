@@ -1,3 +1,4 @@
+
 from robot_code.utilities.base import Base
 from robot_code.utilities.custom_exception import FailedCustomException
 import inspect
@@ -21,17 +22,14 @@ class Go_Search_Phrase(Base):
     def go_to_page(self):
         source = inspect.currentframe().f_code.co_name
         try:
-            self.page.goto(
-                url=self.my_constanst.NEWS_URL
-            )
-            # wait for hamburguer menu
-            self.page.wait_for_selector(
-                selector=self.my_constanst.SELECTOR_HAMBURGER_MENU,
-                timeout=40000)
 
-            # self.page.mouse.wheel(delta_y=40, delta_x=0)
-            # self.page.mouse.wheel(delta_y=-40, delta_x=0)
-            self.wait_this(time_seconds=3)
+            self.selenium.open_available_browser(options=self.chrome_options)
+
+            for _ in range(3):
+                try:
+                    self.selenium.go_to(url=self.my_constanst.NEWS_URL)
+                except:
+                    self.selenium.reload_page()
 
             logger.info(
                 self.my_constanst.LOG_INFO_TEMPLATE.format(
@@ -60,22 +58,22 @@ class Go_Search_Phrase(Base):
         source = inspect.currentframe().f_code.co_name
         try:
             search_phrase = self.work_items.payload['search_phrase']
+
             # Need to click on the hamburger menu
-            self.page.wait_for_selector(
-                selector=self.my_constanst.SELECTOR_HAMBURGER_MENU,
-                timeout=40000).click()
+            self.selenium.click_element_when_clickable(
+                locator=self.my_constanst.SELECTOR_HAMBURGER_MENU,
+                timeout=40000)
 
-            # clicking in the search bar and enter searchphrase
-            self.page.wait_for_selector(
-                selector=self.my_constanst.SELECTOR_SEARCH_FIELD,
-                timeout=40000
-            ).fill(value=search_phrase)
+            # wait for search field is visible
+            self.selenium.wait_until_element_is_visible(
+                locator=self.my_constanst.SELECTOR_SEARCH_FIELD,
+                timeout=40000)
 
-            self.page.keyboard.press('Enter')
-            self.wait_this(time_seconds=2)
+            # get the search field web element and insert text
+            search_field = self.selenium.get_webelement(
+                locator=self.my_constanst.SELECTOR_SEARCH_FIELD)
 
-            # self.page.mouse.wheel(delta_y=40, delta_x=0)
-            # self.page.mouse.wheel(delta_y=-25, delta_x=0)
+            search_field.send_keys(search_phrase+"\n")
 
             logger.info(
                 self.my_constanst.LOG_INFO_TEMPLATE.format(

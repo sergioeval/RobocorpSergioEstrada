@@ -22,17 +22,21 @@ class Sort_Get_Pagination(Base):
         """
         source = inspect.currentframe().f_code.co_name
         try:
-            # need to sort by  date Selector fixed OK
-            self.page.wait_for_selector(
-                selector=self.my_constanst.SELECTOR_OPTIONS_SORT_BY,
-                timeout=40000
-            ).click()
+            # need to sort by  date
+            # wait for element an select it then click to show options
+            self.selenium.wait_until_element_is_visible(
+                locator=self.my_constanst.SELECTOR_OPTIONS_SORT_BY, timeout=40000)
 
-            # click on Date to sort the data
-            self.page.locator(selector=self.my_constanst.SELECTOR_OPTIONS_SORT_BY).locator(
-                selector_or_locator=self.my_constanst.SELECTOR_OPTION_BY_DATE).click()
+            sort_element = self.selenium.get_webelement(
+                locator=self.my_constanst.SELECTOR_OPTIONS_SORT_BY)
 
-            self.wait_this(time_seconds=2)
+            sort_element.click()
+
+            # get the date element that is inside the sort element and click
+            date_element = sort_element.find_element(
+                by=self.Selenium_By.XPATH,
+                value=self.my_constanst.SELECTOR_OPTION_BY_DATE)
+            date_element.click()
 
             logger.info(
                 self.my_constanst.LOG_INFO_TEMPLATE.format(
@@ -63,14 +67,13 @@ class Sort_Get_Pagination(Base):
             pages = []
             count = 2
 
-            # Check if pagination is visible , some results will not have it
-            self.page.wait_for_load_state()
-            if not self.page.is_visible(selector=self.my_constanst.SELECTOR_PAGINATION_SECTION):
+            if not self.selenium.is_element_visible(
+                    locator=self.my_constanst.SELECTOR_PAGINATION_SECTION):
                 logger.info("No pagination in search result")
                 return []
 
-            while self.page.is_visible(
-                    selector=self.my_constanst.SELECTOR_PAGINATION_TEMPLATE.format(count=count)):
+            while self.selenium.is_element_visible(
+                    locator=self.my_constanst.SELECTOR_PAGINATION_TEMPLATE.format(count=count)):
                 pages.append(count)
                 count += 1
 

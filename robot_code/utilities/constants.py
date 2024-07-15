@@ -35,7 +35,8 @@ SELECTOR_PAGINATION_SECTION = "//div[@tabindex='0' and contains(text(), '1')]"
 SELECTOR_PAGINATION_TEMPLATE = "//div[@aria-label='Page {count}']"
 
 # to get the results information
-SELECTOR_ROOT_RESULTS_SECTION = "#___gcse_0"
+# SELECTOR_ROOT_RESULTS_SECTION = "#___gcse_0"
+SELECTOR_ROOT_RESULTS_SECTION = "id:___gcse_0"
 # SELECTOR_ROOT_RESULTS_SECTION = "xpath://div[@id='___gcse_0']/div/div/div/div[5]/div[2]"
 # SELECTOR_ROOT_RESULTS_SECTION = "//div[@class='gsc-resultsbox-visible']"
 SELECTOR_SEARCH_RESULTS = "//div[@class='gsc-webResult gsc-result']"

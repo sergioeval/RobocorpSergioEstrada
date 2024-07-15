@@ -19,7 +19,7 @@ Initiate_Structure().setup_folders()
 log_file_name = f"{Base.my_constanst.LOGGING_PATH}task_1_{Base.string_timestamp}.log"
 logging.basicConfig(filename=log_file_name, filemode='w',
                     level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+                    format='%(asctime)s ################################## %(levelname)s ##################################\n%(message)s')
 logger = logging.getLogger()
 
 

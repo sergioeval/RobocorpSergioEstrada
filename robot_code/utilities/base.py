@@ -1,10 +1,11 @@
-from robocorp import browser
+# from robocorp import browser
 from robocorp import workitems
 from datetime import datetime
 from RPA.HTTP import HTTP
 from RPA.Excel.Files import Files
 from RPA.Tables import Tables
 from RPA.Archive import Archive
+from RPA.Browser.Selenium import Selenium
 from robot_code.utilities import constants as CONSTANTS
 from RPA.FileSystem import FileSystem
 import time
@@ -12,6 +13,27 @@ from dateutil.relativedelta import relativedelta
 import inspect
 import logging
 import glob
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as ec
+
+
+chrome_options = Options()
+# Speed optimization options
+# chrome_options.add_argument('--headless')
+chrome_options.page_load_strategy = "eager"
+chrome_options.add_argument('--ignore-certificate-errors')
+chrome_options.add_argument('--log-level=3')
+chrome_options.add_argument('--disable-gpu')
+# chrome_options.add_argument('--blink-settings=imagesEnabled=false')
+chrome_options.add_argument('--disable-extensions')
+# chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-software-rasterizer')
+chrome_options.add_argument('--start-maximized')
+# chrome_options.add_argument('--disable-dev-shm-usage')
+chrome_options.add_argument('--enable-fast-unload')
+
 
 logger = logging.getLogger()
 
@@ -20,17 +42,22 @@ class Base:
     """
     To provide all the commoun utils for the robot
     """
-    page = browser.page()
+    # page = browser.page()
     work_items = workitems.inputs.current
     run_time_stamp = datetime.now()
     string_timestamp = run_time_stamp.strftime("%Y%m%d_%H%M%S")
     http_actions = HTTP()
     zip_archive_actions = Archive()
     my_constanst = CONSTANTS
+    selenium = Selenium()
     file_system_actions = FileSystem()
     file_name_base_class = inspect.currentframe().f_code.co_filename
     tables_actions = Tables()
     excel_actions = Files()
+    chrome_options = chrome_options
+    Selenium_By = By
+    Selenium_Keys = Keys
+    Selenium_Ec = ec
 
     @classmethod
     def archive_to_zip(cls):
@@ -162,7 +189,7 @@ class Base:
         except Exception as e:
             cls.work_items.fail(exception_type="APPLICATION",
                                 code="ERROR_GETTING_VALID_TIME_PARAMETERS", message=e)
-            fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
+            fail_message = cls.my_constanst.LOG_FAILED_TEMPLATE.format(
                 message=e,
                 function_name=source,
                 file_name=cls.get_file_name(cls.file_name_base_class)

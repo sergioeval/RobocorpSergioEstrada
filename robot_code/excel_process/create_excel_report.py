@@ -30,6 +30,7 @@ class Create_Excel_Report(Base):
             # save data and save file
             for item in news_data:
                 del item["accepted"]
+                del item["image_source"]
                 self.excel_actions.append_rows_to_worksheet(
                     content=item, header=True)
             workbook.save()

@@ -1,3 +1,4 @@
+from selenium.webdriver.common.by import By
 import re
 from bs4 import BeautifulSoup
 from robot_code.utilities.base import Base
@@ -26,22 +27,26 @@ class Get_News_Data(Base):
         source = inspect.currentframe().f_code.co_name
         try:
             final_search_results = []
-            for p in self.pagination:
-                results = self.get_data_from_page()
-                results, need_cleanup = self.eval_search_results(
-                    results=results,
-                    accepted_params=self.accepted_time_params)
-                # if need cleanup
-                if need_cleanup == True:
-                    results = [x for x in results if x['accepted'] == True]
-                    final_search_results = final_search_results+results
-                    break
+            if len(self.pagination) == 0:
+                results = self.get_and_evaluate()
+                final_search_results = final_search_results+results
+                logger.info(
+                    self.my_constanst.LOG_INFO_TEMPLATE.format(
+                        message="Search results validated",
+                        function_name=source,
+                        file_name=self.get_file_name(self.file_name)
+                    )
+                )
+                return final_search_results
 
-                # no cleanup needed continue pagination
+            for p in self.pagination:
+                results = self.get_and_evaluate()
                 final_search_results = final_search_results+results
                 # go to next page
-                self.page.locator(
-                    selector=self.my_constanst.SELECTOR_PAGINATION_TEMPLATE.format(count=p)).click()
+                self.selenium.click_element_when_clickable(
+                    locator=self.my_constanst.SELECTOR_PAGINATION_TEMPLATE.format(
+                        count=p),
+                    timeout=30000)
 
             logger.info(
                 self.my_constanst.LOG_INFO_TEMPLATE.format(
@@ -63,6 +68,33 @@ class Get_News_Data(Base):
             )
             raise FailedCustomException(message=fail_message)
 
+    def get_and_evaluate(self):
+        """
+        To make the code easier to read 
+        """
+        source = inspect.currentframe().f_code.co_name
+        try:
+            results = self.get_data_from_page()
+            results, need_cleanup = self.eval_search_results(
+                results=results,
+                accepted_params=self.accepted_time_params)
+
+            if need_cleanup == False:
+                return results
+
+            results = [x for x in results if x['accepted'] == True]
+            return results
+
+        except Exception as e:
+            self.work_items.fail(exception_type="APPLICATION",
+                                 code="STEP_3_GET_AND_EVALUATE_FAILED", message=e)
+            fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
+                message=e,
+                function_name=source,
+                file_name=self.get_file_name(self.file_name)
+            )
+            raise FailedCustomException(message=fail_message)
+
     def eval_search_results(self, results, accepted_params):
         """
         To evaluate the search results from each page
@@ -76,6 +108,12 @@ class Get_News_Data(Base):
                 for el in accepted_params:
                     if el in date:
                         res["accepted"] = True
+                        # if accepted we can download the image
+                        self.http_actions.download(
+                            res["image_source"],
+                            self.my_constanst.PICTURES_PATH +
+                            res["image_name"],
+                            overwrite=True)
                         break
                 if "accepted" not in res.keys():
                     res["accepted"] = False
@@ -107,28 +145,26 @@ class Get_News_Data(Base):
             # page = browser.page()
 
             # get main element containing all results
-            self.page.wait_for_selector(
-                selector=self.my_constanst.SELECTOR_ROOT_RESULTS_SECTION,
+            self.selenium.wait_until_element_is_visible(
+                locator=self.my_constanst.SELECTOR_ROOT_RESULTS_SECTION,
                 timeout=30000)
 
-            search_results = self.page.locator(
-                selector=self.my_constanst.SELECTOR_ROOT_RESULTS_SECTION).inner_html()
+            search_results = self.selenium.get_webelement(
+                locator="id:___gcse_0")
+            news_elements = search_results.find_elements(
+                by=self.Selenium_By.CLASS_NAME, value="gsc-webResult.gsc-result")
 
-            soup = BeautifulSoup(search_results, "html.parser")
-            only_news = soup.find_all(
-                "div", attrs={"class": "gsc-webResult gsc-result"})
             news_data = []
 
-            for result in only_news:
-                title = result.find('a', attrs={'class': 'gs-title'}).text
-                description = result.find(
-                    'div', attrs={"dir": "ltr", "class": "gs-bidi-start-align gs-snippet"}).text
+            for result in news_elements:
+                res_data = result.text.split("\n")
+                title = res_data[0]
+                description = res_data[2]
                 date = description.split("...")[0].strip()
-                image_data = result.find("img")
-                image_source = image_data.get("src")
+                image_data = result.find_element(
+                    by=By.TAG_NAME, value='img')
+                image_source = image_data.get_attribute("src")
                 image_name = image_source.split('/')[-1].split(":")[-1]+".png"
-                self.http_actions.download(image_source, self.my_constanst.PICTURES_PATH +
-                                           image_name, overwrite=True)
                 search_word_counts = len([x for x in description.split() if str(
                     x.lower()) == self.work_items.payload["search_phrase"].lower()])
 
@@ -137,6 +173,7 @@ class Get_News_Data(Base):
                     "description": description,
                     "date": date,
                     "image_name": image_name,
+                    "image_source": image_source,
                     "search_word_counts": search_word_counts,
                     "contains_money_amount": self.check_contains_money_amount(text=description)
                 })
