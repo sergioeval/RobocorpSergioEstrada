@@ -66,11 +66,19 @@ class Sort_Get_Pagination(Base):
             # But we have to make sure we get only the pagination pages
             pages = []
             count = 2
+            print("")
+            pagi_sec = self.selenium.get_webelement(
+                locator=self.my_constanst.SELECTOR_PAGINATION_SECTION)
+            self.selenium.is_element_visible(
+                locator=self.my_constanst.SELECTOR_PAGINATION_SECTION)
+            self.selenium
 
             if not self.selenium.is_element_visible(
                     locator=self.my_constanst.SELECTOR_PAGINATION_SECTION):
                 logger.info("No pagination in search result")
                 return []
+
+            # self.selenium.is_element_visible(locator=self.my_constanst.SELECTOR_PAGINATION_TEMPLATE.format(count=2))
 
             while self.selenium.is_element_visible(
                     locator=self.my_constanst.SELECTOR_PAGINATION_TEMPLATE.format(count=count)):
