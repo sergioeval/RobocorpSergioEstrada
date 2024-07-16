@@ -1,4 +1,5 @@
 from robocorp.tasks import task
+from robocorp import workitems
 # from Get_News_Data import Get_News_Data
 # from Initiate_Structure import Initiate_Structure
 import logging
@@ -11,6 +12,7 @@ from robot_code.browser_process.step_3_get_data import Get_News_Data
 from robot_code.excel_process.create_excel_report import Create_Excel_Report
 
 from robot_code.utilities.custom_exception import FailedCustomException
+import inspect
 
 # Setup folders
 Initiate_Structure().setup_folders()
@@ -28,30 +30,44 @@ def get_the_news():
     """
     Task to get all news according to the work items parameters
     """
-    # work_item_current = workitems.inputs.current
+    source = inspect.currentframe().f_code.co_name
+    file_name = inspect.currentframe().f_code.co_filename
+    for item in workitems.inputs:
+        print(item)
+        try:
+            # Search news data
+            Go_Search_Phrase(search_phrase=item.payload["search_phrase"]).run()
+            pagination = Sort_Get_Pagination().run()
+            print(pagination)
+            valid_time_params = Base().get_valid_time_parameters(item=item)
+            print(valid_time_params)
 
-    try:
-        # Search news data
-        Go_Search_Phrase().run()
-        pagination = Sort_Get_Pagination().run()
-        valid_time_params = Base().get_valid_time_parameters()
+            # Get the news data
+            news_data = Get_News_Data(
+                pagination=pagination,
+                accepted_time_params=valid_time_params,
+                item=item).get_all_data()
 
-        # Get the news data
-        news_data = Get_News_Data(
-            pagination=pagination,
-            accepted_time_params=valid_time_params).get_all_data()
+            # creating excel report
+            Create_Excel_Report().create_file_add_data(news_data=news_data)
 
-        # creating excel report
-        Create_Excel_Report().create_file_add_data(news_data=news_data)
+            # archive and clean
+            Base.archive_to_zip()
+            Base.clean_output_folder()
+            item.done()
 
-        # archive and clean
-        Base.archive_to_zip()
-        Base.clean_output_folder()
-
-    except FailedCustomException as e:
-        logger.error(e)
-        Base.file_system_actions.copy_file(
-            source=log_file_name,
-            destination=Base.my_constanst.OUTPUT_BASE_PATH +
-            log_file_name.split("/")[-1]
-        )
+        except FailedCustomException as e:
+            logger.info(
+                Base.my_constanst.LOG_INFO_TEMPLATE.format(
+                    message=e,
+                    function_name=source,
+                    file_name=file_name
+                )
+            )
+            Base.file_system_actions.copy_file(
+                source=log_file_name,
+                destination=Base.my_constanst.OUTPUT_BASE_PATH +
+                log_file_name.split("/")[-1]
+            )
+            item.fail(exception_type="APPLICATION",
+                      code="SORT_DATA_FAILED", message=e)

@@ -12,12 +12,15 @@ class Go_Search_Phrase(Base):
     """
     file_name = inspect.currentframe().f_code.co_filename
 
+    def __init__(self, search_phrase):
+        self.search_phrase = search_phrase
+
     def run(self):
         """
         run the whole process
         """
         self.go_to_page()
-        self.search_phrase()
+        self.search_phrase_process()
 
     def go_to_page(self):
         source = inspect.currentframe().f_code.co_name
@@ -41,9 +44,8 @@ class Go_Search_Phrase(Base):
 
         except Exception as e:
             # source = inspect.currentframe().f_code.co_name
-            self.work_items.fail(exception_type="APPLICATION",
-                                 code="GOTO_PAGE_FAILED", message=e)
-
+            # self.work_items.fail(exception_type="APPLICATION",
+            #                      code="GOTO_PAGE_FAILED", message=e)
             fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
                 message=e,
                 function_name=source,
@@ -51,13 +53,13 @@ class Go_Search_Phrase(Base):
             )
             raise FailedCustomException(message=fail_message)
 
-    def search_phrase(self):
+    def search_phrase_process(self):
         """
         to search the phrase from the work item
         """
         source = inspect.currentframe().f_code.co_name
         try:
-            search_phrase = self.work_items.payload['search_phrase']
+            # search_phrase = self.work_items.payload['search_phrase']
 
             # Need to click on the hamburger menu
             self.selenium.click_element_when_clickable(
@@ -73,7 +75,7 @@ class Go_Search_Phrase(Base):
             search_field = self.selenium.get_webelement(
                 locator=self.my_constanst.SELECTOR_SEARCH_FIELD)
 
-            search_field.send_keys(search_phrase+"\n")
+            search_field.send_keys(self.search_phrase+"\n")
 
             logger.info(
                 self.my_constanst.LOG_INFO_TEMPLATE.format(
@@ -83,9 +85,8 @@ class Go_Search_Phrase(Base):
                 )
             )
         except Exception as e:
-
-            self.work_items.fail(exception_type="APPLICATION",
-                                 code="SEARCH_PHRASE_FAILED", message=e)
+            # self.work_items.fail(exception_type="APPLICATION",
+            #                      code="SEARCH_PHRASE_FAILED", message=e)
             fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
                 message=e,
                 function_name=source,
