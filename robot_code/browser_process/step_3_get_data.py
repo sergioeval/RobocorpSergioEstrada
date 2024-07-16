@@ -14,11 +14,12 @@ class Get_News_Data(Base):
     """
     file_name = inspect.currentframe().f_code.co_filename
 
-    def __init__(self, pagination, accepted_time_params):
+    def __init__(self, pagination, accepted_time_params, item):
         """
         """
         self.accepted_time_params = accepted_time_params
         self.pagination = pagination
+        self.item = item
 
     def get_all_data(self):
         """
@@ -28,7 +29,7 @@ class Get_News_Data(Base):
         try:
             final_search_results = []
             if len(self.pagination) == 0:
-                results = self.get_and_evaluate()
+                results, need_cleanup = self.get_and_evaluate()
                 final_search_results = final_search_results+results
                 logger.info(
                     self.my_constanst.LOG_INFO_TEMPLATE.format(
@@ -40,13 +41,30 @@ class Get_News_Data(Base):
                 return final_search_results
 
             for p in self.pagination:
-                results = self.get_and_evaluate()
+                results, need_cleanup = self.get_and_evaluate()
                 final_search_results = final_search_results+results
+                if need_cleanup == True:
+                    break
                 # go to next page
-                self.selenium.click_element_when_clickable(
+                try:
+                    self.selenium.wait_until_element_is_visible(
+                        locator=self.my_constanst.SELECTOR_PAGINATION_TEMPLATE.format(
+                            count=p),
+                        timeout=40000)
+                except Exception as e:
+                    fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
+                        message=f"pagination element #{p} was not found error: {e}",
+                        function_name=source,
+                        file_name=self.get_file_name(self.file_name)
+                    )
+                    raise FailedCustomException(message=fail_message)
+
+                pagination_element = self.selenium.get_webelement(
                     locator=self.my_constanst.SELECTOR_PAGINATION_TEMPLATE.format(
-                        count=p),
-                    timeout=30000)
+                        count=p)
+                )
+                pagination_element.click()
+                self.wait_this(time_seconds=2)
 
             logger.info(
                 self.my_constanst.LOG_INFO_TEMPLATE.format(
@@ -59,8 +77,8 @@ class Get_News_Data(Base):
             return final_search_results
 
         except Exception as e:
-            self.work_items.fail(exception_type="APPLICATION",
-                                 code="STEP_3_GET_ALL_DATA_FAILED", message=e)
+            # self.work_items.fail(exception_type="APPLICATION",
+            #                      code="STEP_3_GET_ALL_DATA_FAILED", message=e)
             fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
                 message=e,
                 function_name=source,
@@ -80,14 +98,15 @@ class Get_News_Data(Base):
                 accepted_params=self.accepted_time_params)
 
             if need_cleanup == False:
-                return results
+                return results, need_cleanup
 
             results = [x for x in results if x['accepted'] == True]
-            return results
+            print(f"data results: {results}")
+            return results, need_cleanup
 
         except Exception as e:
-            self.work_items.fail(exception_type="APPLICATION",
-                                 code="STEP_3_GET_AND_EVALUATE_FAILED", message=e)
+            # self.work_items.fail(exception_type="APPLICATION",
+            #                      code="STEP_3_GET_AND_EVALUATE_FAILED", message=e)
             fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
                 message=e,
                 function_name=source,
@@ -129,8 +148,8 @@ class Get_News_Data(Base):
             return results, need_cleanup
 
         except Exception as e:
-            self.work_items.fail(exception_type="APPLICATION",
-                                 code="RESULTS_EVALUATION_PROCESS_FAILED", message=e)
+            # self.work_items.fail(exception_type="APPLICATION",
+            #                      code="RESULTS_EVALUATION_PROCESS_FAILED", message=e)
             fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
                 message=e,
                 function_name=source,
@@ -166,7 +185,7 @@ class Get_News_Data(Base):
                 image_source = image_data.get_attribute("src")
                 image_name = image_source.split('/')[-1].split(":")[-1]+".png"
                 search_word_counts = len([x for x in description.split() if str(
-                    x.lower()) == self.work_items.payload["search_phrase"].lower()])
+                    x.lower()) == self.item.payload["search_phrase"].lower()])
 
                 news_data.append({
                     "title": title,
@@ -189,8 +208,8 @@ class Get_News_Data(Base):
             return news_data
 
         except Exception as e:
-            self.work_items.fail(exception_type="APPLICATION",
-                                 code="STEP_3_GET_DATA_FROM_PAGE_FAILED", message=e)
+            # self.work_items.fail(exception_type="APPLICATION",
+            #                      code="STEP_3_GET_DATA_FROM_PAGE_FAILED", message=e)
             fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
                 message=e,
                 function_name=source,

@@ -47,8 +47,8 @@ class Sort_Get_Pagination(Base):
             )
 
         except Exception as e:
-            self.work_items.fail(exception_type="APPLICATION",
-                                 code="SORT_DATA_FAILED", message=e)
+            # self.work_items.fail(exception_type="APPLICATION",
+            #                      code="SORT_DATA_FAILED", message=e)
             fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
                 message=e,
                 function_name=source,
@@ -67,16 +67,16 @@ class Sort_Get_Pagination(Base):
             pages = []
             count = 2
             print("")
-            pagi_sec = self.selenium.get_webelement(
-                locator=self.my_constanst.SELECTOR_PAGINATION_SECTION)
-            self.selenium.is_element_visible(
-                locator=self.my_constanst.SELECTOR_PAGINATION_SECTION)
-            self.selenium
+            # pagi_sec = self.selenium.get_webelement(
+            #     locator=self.my_constanst.SELECTOR_PAGINATION_SECTION)
+            # self.selenium.is_element_visible(
+            #     locator=self.my_constanst.SELECTOR_PAGINATION_SECTION)
+            # self.selenium
 
             if not self.selenium.is_element_visible(
                     locator=self.my_constanst.SELECTOR_PAGINATION_SECTION):
                 logger.info("No pagination in search result")
-                return []
+                return pages
 
             # self.selenium.is_element_visible(locator=self.my_constanst.SELECTOR_PAGINATION_TEMPLATE.format(count=2))
 
@@ -94,8 +94,8 @@ class Sort_Get_Pagination(Base):
             )
             return pages
         except Exception as e:
-            self.work_items.fail(exception_type="APPLICATION",
-                                 code="GET_PAGINATION_FAILED", message=e)
+            # self.work_items.fail(exception_type="APPLICATION",
+            #                      code="GET_PAGINATION_FAILED", message=e)
             fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
                 message=e,
                 function_name=source,

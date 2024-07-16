@@ -1,5 +1,5 @@
 # from robocorp import browser
-from robocorp import workitems
+# from robocorp import workitems
 from datetime import datetime
 from RPA.HTTP import HTTP
 from RPA.Excel.Files import Files
@@ -17,6 +17,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as ec
+from robot_code.utilities.custom_exception import FailedCustomException
 
 
 chrome_options = Options()
@@ -43,7 +44,7 @@ class Base:
     To provide all the commoun utils for the robot
     """
     # page = browser.page()
-    work_items = workitems.inputs.current
+    # work_items = workitems.inputs.current
     run_time_stamp = datetime.now()
     string_timestamp = run_time_stamp.strftime("%Y%m%d_%H%M%S")
     http_actions = HTTP()
@@ -98,9 +99,9 @@ class Base:
             )
 
         except Exception as e:
-            cls.work_items.fail(exception_type="APPLICATION",
-                                code="ERROR_IN_ARCHIVE_TO_ZIP_PROCESS", message=e)
-            fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
+            # cls.work_items.fail(exception_type="APPLICATION",
+            #                      code="ERROR_IN_ARCHIVE_TO_ZIP_PROCESS", message=e)
+            fail_message = cls.my_constanst.LOG_FAILED_TEMPLATE.format(
                 message=e,
                 function_name=source,
                 file_name=cls.get_file_name(cls.file_name_base_class)
@@ -133,12 +134,54 @@ class Base:
             )
 
         except Exception as e:
-            cls.work_items.fail(exception_type="APPLICATION",
-                                code="ERROR_IN_CLEANING_OUTPUT_FOLDER_PROCESS", message=e)
+            # cls.work_items.fail(exception_type="APPLICATION",
+            #                     code="ERROR_IN_CLEANING_OUTPUT_FOLDER_PROCESS", message=e)
             fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
                 message=e,
                 function_name=source,
                 file_name=cls.get_file_name(cls.file_name_base_class)
+            )
+            raise FailedCustomException(message=fail_message)
+
+    def get_valid_time_parameters(self, item):
+        """
+        get the months or valid date parameters accordng to the request
+        """
+        source = inspect.currentframe().f_code.co_name
+        try:
+            months_wi = item.payload["months"]
+            now = self.run_time_stamp
+            current_date_to_use = datetime(now.year, now.month, 1)
+
+            months_to_add = 0 if months_wi <= 1 else (months_wi-1)
+            accepted_new_dates = []+[current_date_to_use]
+
+            for m in range(months_to_add):
+                accepted_new_dates.append(
+                    current_date_to_use + relativedelta(months=0-m-1))
+
+            default_accepted = ['ago']
+
+            for d in accepted_new_dates:
+                default_accepted.append(d.strftime("%b"))
+
+            logger.info(
+                self.my_constanst.LOG_INFO_TEMPLATE.format(
+                    message=f"Valid time parameters to use: {default_accepted}",
+                    function_name=source,
+                    file_name=self.get_file_name(
+                        self.file_name_base_class)
+                )
+            )
+            return default_accepted
+
+        except Exception as e:
+            # self.work_items.fail(exception_type="APPLICATION",
+            #                      code="ERROR_GETTING_VALID_TIME_PARAMETERS", message=e)
+            fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
+                message=e,
+                function_name=source,
+                file_name=self.get_file_name(self.file_name_base_class)
             )
             raise FailedCustomException(message=fail_message)
 
@@ -149,49 +192,3 @@ class Base:
     @staticmethod
     def get_file_name(text):
         return text.split("robot_code")[-1]
-
-    @classmethod
-    def get_valid_time_parameters(cls):
-        """
-        get the months or valid date parameters accordng to the request
-        """
-        source = inspect.currentframe().f_code.co_name
-        try:
-            months_wi = cls.work_items.payload['months']
-            now = cls.run_time_stamp
-            current_date_to_use = datetime(now.year, now.month, 1)
-
-            months_to_add = 0 if months_wi <= 1 else (months_wi-1)
-            accepted_new_dates = []+[current_date_to_use]
-
-            for m in range(months_to_add):
-                accepted_new_dates.append(
-                    current_date_to_use + relativedelta(months=0-m-1))
-
-            # final_date = current_date_to_use + \
-            #     relativedelta(months=months_to_add)
-
-            default_accepted = ['ago']
-
-            for d in accepted_new_dates:
-                default_accepted.append(d.strftime("%b"))
-
-            logger.info(
-                cls.my_constanst.LOG_INFO_TEMPLATE.format(
-                    message=f"Valid time parameters to use: {default_accepted}",
-                    function_name=source,
-                    file_name=cls.get_file_name(
-                        cls.file_name_base_class)
-                )
-            )
-            return default_accepted
-
-        except Exception as e:
-            cls.work_items.fail(exception_type="APPLICATION",
-                                code="ERROR_GETTING_VALID_TIME_PARAMETERS", message=e)
-            fail_message = cls.my_constanst.LOG_FAILED_TEMPLATE.format(
-                message=e,
-                function_name=source,
-                file_name=cls.get_file_name(cls.file_name_base_class)
-            )
-            raise FailedCustomException(message=fail_message)
