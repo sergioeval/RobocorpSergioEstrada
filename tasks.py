@@ -33,14 +33,11 @@ def get_the_news():
     source = inspect.currentframe().f_code.co_name
     file_name = inspect.currentframe().f_code.co_filename
     for item in workitems.inputs:
-        print(item)
         try:
             # Search news data
             Go_Search_Phrase(search_phrase=item.payload["search_phrase"]).run()
             pagination = Sort_Get_Pagination().run()
-            print(pagination)
             valid_time_params = Base().get_valid_time_parameters(item=item)
-            print(valid_time_params)
 
             # Get the news data
             news_data = Get_News_Data(

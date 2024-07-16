@@ -1,9 +1,9 @@
 [
   {
       "payload": {
-        "search_phrase": "earthquake",
+        "search_phrase": "trump",
         "news_category": "stories", 
-        "months": 2
+        "months": 1
       },
       "files": {}
   }

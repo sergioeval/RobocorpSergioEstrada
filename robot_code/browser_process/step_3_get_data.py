@@ -33,7 +33,7 @@ class Get_News_Data(Base):
                 final_search_results = final_search_results+results
                 logger.info(
                     self.my_constanst.LOG_INFO_TEMPLATE.format(
-                        message="Search results validated",
+                        message="SEARCH RESULT VALIDATED (NO PAGINATIONS)",
                         function_name=source,
                         file_name=self.get_file_name(self.file_name)
                     )
@@ -53,7 +53,7 @@ class Get_News_Data(Base):
                         timeout=40000)
                 except Exception as e:
                     fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
-                        message=f"pagination element #{p} was not found error: {e}",
+                        message=f"PAGINATION ELEMENT #{p} WAS NOT FOUND AND GOT THIS ERROR: {e}",
                         function_name=source,
                         file_name=self.get_file_name(self.file_name)
                     )
@@ -68,7 +68,7 @@ class Get_News_Data(Base):
 
             logger.info(
                 self.my_constanst.LOG_INFO_TEMPLATE.format(
-                    message="Search results validated",
+                    message="SEARCH RESULT VALIDATED (WITH PAGINATIONS)",
                     function_name=source,
                     file_name=self.get_file_name(self.file_name)
                 )
@@ -101,12 +101,9 @@ class Get_News_Data(Base):
                 return results, need_cleanup
 
             results = [x for x in results if x['accepted'] == True]
-            print(f"data results: {results}")
             return results, need_cleanup
 
         except Exception as e:
-            # self.work_items.fail(exception_type="APPLICATION",
-            #                      code="STEP_3_GET_AND_EVALUATE_FAILED", message=e)
             fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
                 message=e,
                 function_name=source,
@@ -140,7 +137,7 @@ class Get_News_Data(Base):
 
             logger.info(
                 self.my_constanst.LOG_INFO_TEMPLATE.format(
-                    message="Search Results evaluation executed Correctly",
+                    message="EVALUATION OF SEARCH RESULTS EXECUTED CORRECTLY",
                     function_name=source,
                     file_name=self.get_file_name(self.file_name)
                 )
@@ -169,9 +166,11 @@ class Get_News_Data(Base):
                 timeout=30000)
 
             search_results = self.selenium.get_webelement(
-                locator="id:___gcse_0")
+                locator=self.my_constanst.SELECTOR_ROOT_RESULTS_SECTION)
+
             news_elements = search_results.find_elements(
-                by=self.Selenium_By.CLASS_NAME, value="gsc-webResult.gsc-result")
+                by=self.Selenium_By.CLASS_NAME,
+                value=self.my_constanst.SELECTOR_NEWS_ELEMENTS)
 
             news_data = []
 
@@ -199,7 +198,7 @@ class Get_News_Data(Base):
 
             logger.info(
                 self.my_constanst.LOG_INFO_TEMPLATE.format(
-                    message="Data from page extracted correctly.",
+                    message="DATA EXTRACTED FROM PAGE PROCESS EXECUTED CORRECTLY",
                     function_name=source,
                     file_name=self.get_file_name(self.file_name)
                 )
@@ -208,8 +207,6 @@ class Get_News_Data(Base):
             return news_data
 
         except Exception as e:
-            # self.work_items.fail(exception_type="APPLICATION",
-            #                      code="STEP_3_GET_DATA_FROM_PAGE_FAILED", message=e)
             fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
                 message=e,
                 function_name=source,

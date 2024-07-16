@@ -34,9 +34,14 @@ class Go_Search_Phrase(Base):
                 except:
                     self.selenium.reload_page()
 
+            # Wait for hamburguer element
+            self.selenium.wait_until_element_is_visible(
+                locator=self.my_constanst.SELECTOR_HAMBURGER_MENU,
+                timeout=60000)
+
             logger.info(
                 self.my_constanst.LOG_INFO_TEMPLATE.format(
-                    message="Go to page executed ok",
+                    message="PAGE LOADING PROCESS EXECUTED FINE",
                     function_name=source,
                     file_name=self.get_file_name(self.file_name)
                 )
@@ -79,7 +84,7 @@ class Go_Search_Phrase(Base):
 
             logger.info(
                 self.my_constanst.LOG_INFO_TEMPLATE.format(
-                    message="Search phrase process executed correctly.",
+                    message="SEARCH PHRASE PROCESS EXECUTED OK",
                     function_name=source,
                     file_name=self.get_file_name(self.file_name)
                 )

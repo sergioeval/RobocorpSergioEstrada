@@ -92,15 +92,13 @@ class Base:
 
             logger.info(
                 cls.my_constanst.LOG_INFO_TEMPLATE.format(
-                    message=f"Final ZIP file created correctly: {archive_name}",
+                    message=f"FINAL ZIP FILE CREATED: {archive_name}",
                     function_name=source,
                     file_name=cls.get_file_name(cls.file_name_base_class)
                 )
             )
 
         except Exception as e:
-            # cls.work_items.fail(exception_type="APPLICATION",
-            #                      code="ERROR_IN_ARCHIVE_TO_ZIP_PROCESS", message=e)
             fail_message = cls.my_constanst.LOG_FAILED_TEMPLATE.format(
                 message=e,
                 function_name=source,
@@ -127,15 +125,13 @@ class Base:
 
             logger.info(
                 cls.my_constanst.LOG_INFO_TEMPLATE.format(
-                    message="Cleanup process executed correctly",
+                    message="CLEANUP PROCESS EXECUTED",
                     function_name=source,
                     file_name=cls.get_file_name(cls.file_name_base_class)
                 )
             )
 
         except Exception as e:
-            # cls.work_items.fail(exception_type="APPLICATION",
-            #                     code="ERROR_IN_CLEANING_OUTPUT_FOLDER_PROCESS", message=e)
             fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
                 message=e,
                 function_name=source,
@@ -167,7 +163,7 @@ class Base:
 
             logger.info(
                 self.my_constanst.LOG_INFO_TEMPLATE.format(
-                    message=f"Valid time parameters to use: {default_accepted}",
+                    message=f"VALID TIME PARAMETERS TO USE: {default_accepted}",
                     function_name=source,
                     file_name=self.get_file_name(
                         self.file_name_base_class)
@@ -176,8 +172,6 @@ class Base:
             return default_accepted
 
         except Exception as e:
-            # self.work_items.fail(exception_type="APPLICATION",
-            #                      code="ERROR_GETTING_VALID_TIME_PARAMETERS", message=e)
             fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
                 message=e,
                 function_name=source,

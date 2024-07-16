@@ -40,15 +40,13 @@ class Sort_Get_Pagination(Base):
 
             logger.info(
                 self.my_constanst.LOG_INFO_TEMPLATE.format(
-                    message="Search result is sorted by date now.",
+                    message="SEARCH RESULTS ARE SORTED BY DATE NOW",
                     function_name=source,
                     file_name=self.get_file_name(self.file_name)
                 )
             )
 
         except Exception as e:
-            # self.work_items.fail(exception_type="APPLICATION",
-            #                      code="SORT_DATA_FAILED", message=e)
             fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
                 message=e,
                 function_name=source,
@@ -66,19 +64,11 @@ class Sort_Get_Pagination(Base):
             # But we have to make sure we get only the pagination pages
             pages = []
             count = 2
-            print("")
-            # pagi_sec = self.selenium.get_webelement(
-            #     locator=self.my_constanst.SELECTOR_PAGINATION_SECTION)
-            # self.selenium.is_element_visible(
-            #     locator=self.my_constanst.SELECTOR_PAGINATION_SECTION)
-            # self.selenium
 
             if not self.selenium.is_element_visible(
                     locator=self.my_constanst.SELECTOR_PAGINATION_SECTION):
                 logger.info("No pagination in search result")
                 return pages
-
-            # self.selenium.is_element_visible(locator=self.my_constanst.SELECTOR_PAGINATION_TEMPLATE.format(count=2))
 
             while self.selenium.is_element_visible(
                     locator=self.my_constanst.SELECTOR_PAGINATION_TEMPLATE.format(count=count)):
@@ -87,15 +77,13 @@ class Sort_Get_Pagination(Base):
 
             logger.info(
                 self.my_constanst.LOG_INFO_TEMPLATE.format(
-                    message=f"Pagination Limits created correctly: {pages}",
+                    message=f"PAGINATION LIMITS CRETED CORRECTLY: {pages}",
                     function_name=source,
                     file_name=self.get_file_name(self.file_name)
                 )
             )
             return pages
         except Exception as e:
-            # self.work_items.fail(exception_type="APPLICATION",
-            #                      code="GET_PAGINATION_FAILED", message=e)
             fail_message = self.my_constanst.LOG_FAILED_TEMPLATE.format(
                 message=e,
                 function_name=source,
