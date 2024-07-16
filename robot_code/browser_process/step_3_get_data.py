@@ -41,11 +41,6 @@ class Get_News_Data(Base):
                 return final_search_results
 
             for p in self.pagination:
-                results, need_cleanup = self.get_and_evaluate()
-                final_search_results = final_search_results+results
-                if need_cleanup == True:
-                    break
-                # go to next page
                 try:
                     self.selenium.wait_until_element_is_visible(
                         locator=self.my_constanst.SELECTOR_PAGINATION_TEMPLATE.format(
@@ -59,12 +54,19 @@ class Get_News_Data(Base):
                     )
                     raise FailedCustomException(message=fail_message)
 
+                results, need_cleanup = self.get_and_evaluate()
+                final_search_results = final_search_results+results
+
+                if need_cleanup == True:
+                    break
+                # go to next page
+
                 pagination_element = self.selenium.get_webelement(
                     locator=self.my_constanst.SELECTOR_PAGINATION_TEMPLATE.format(
                         count=p)
                 )
                 pagination_element.click()
-                self.wait_this(time_seconds=2)
+                # self.wait_this(time_seconds=2)
 
             logger.info(
                 self.my_constanst.LOG_INFO_TEMPLATE.format(
